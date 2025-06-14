@@ -328,3 +328,33 @@ LOGGING = {
 COUNTRY_REGION_JSON_VERSION = 'v2.6'
 
 GOOGLE_MAPS_API_KEY = getenv('GOOGLE_MAPS_API_KEY', '')
+
+# Configure OIDC provider if defined via environment variables
+provider_id = getenv('ADVENTURELOG_OIDC_PROVIDER_ID', '')
+if provider_id != "":
+    secret_file = getenv('ADVENTURELOG_OIDC_CLIENT_SECRET_FILE', '')
+    if secret_file != "":
+        with open(secret_file, 'r') as file:
+            secret = file.read().replace("\n","")
+    else:
+        secret = getenv('ADVENTURELOG_OIDC_CLIENT_SECRET')
+    SOCIALACCOUNT_PROVIDERS = {
+        "openid_connect": {
+            # Optional PKCE defaults to False, but may be required by your provider
+            # Can be set globally, or per app (settings).
+            # NOTE: from testing, the above
+            "OAUTH_PKCE_ENABLED": True,
+            "APPS": [
+                {
+                    "provider_id": provider_id,
+                    "name": getenv('ADVENTURELOG_OIDC_PROVIDER_NAME'),
+                    "client_id": getenv('ADVENTURELOG_OIDC_CLIENT_ID'),
+                    "secret": secret,
+                    "settings": {
+                        "server_url": getenv('ADVENTURELOG_OIDC_SERVER_URL'),
+                        "oauth_pkce_enabled": True,
+                    },
+                }
+            ]
+        }
+    }
